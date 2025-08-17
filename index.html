@@ -1,0 +1,225 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IntrovertBoost — One‑Tap Advice</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* tiny extras */
+    .card { box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    .fade-in { animation: fade 250ms ease-out; }
+    @keyframes fade { from {opacity: 0; transform: translateY(4px);} to {opacity: 1; transform: translateY(0);} }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+  <div class="max-w-3xl mx-auto p-4 sm:p-6">
+    <header class="flex items-center justify-between gap-4 mb-4">
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">IntrovertBoost</h1>
+      <div class="text-sm text-slate-500">Tap for a gentle nudge ✨</div>
+    </header><!-- Controls -->
+<section class="card rounded-2xl bg-white p-4 sm:p-6 mb-4">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <label class="block">
+      <span class="text-xs font-semibold text-slate-600">Category</span>
+      <select id="category" class="mt-1 w-full rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+        <option value="any">Any</option>
+        <option value="micro">Micro‑wins (≤2 min)</option>
+        <option value="social">Social (gentle)</option>
+        <option value="growth">Personal growth</option>
+        <option value="work">Work & learning</option>
+        <option value="energy">Energy & self‑care</option>
+      </select>
+    </label>
+    <label class="block">
+      <span class="text-xs font-semibold text-slate-600">Tone</span>
+      <select id="tone" class="mt-1 w-full rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+        <option value="any">Any</option>
+        <option value="gentle">Gentle</option>
+        <option value="coachy">Coachy</option>
+      </select>
+    </label>
+    <label class="block">
+      <span class="text-xs font-semibold text-slate-600">Context (optional)</span>
+      <input id="context" placeholder="e.g., study, gym, texting" class="mt-1 w-full rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+    </label>
+  </div>
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <button id="btnNew" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 active:scale-[.98]">New advice</button>
+    <button id="btnCopy" class="px-4 py-2 rounded-xl bg-slate-900 text-white font-medium hover:bg-slate-800">Copy</button>
+    <button id="btnFav" class="px-4 py-2 rounded-xl bg-emerald-600 text-white font-medium hover:bg-emerald-700">Save to Favorites</button>
+    <button id="btnClear" class="px-4 py-2 rounded-xl bg-rose-600 text-white font-medium hover:bg-rose-700">Clear Favorites</button>
+  </div>
+</section>
+
+<!-- Advice display -->
+<section class="card rounded-2xl bg-white p-5 sm:p-7 mb-4">
+  <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Your nudge</div>
+  <p id="advice" class="mt-2 text-xl sm:text-2xl leading-relaxed"></p>
+  <div id="mini" class="mt-3 text-sm text-slate-500"></div>
+</section>
+
+<!-- Add your own advice -->
+<section class="card rounded-2xl bg-white p-4 sm:p-6 mb-4">
+  <details>
+    <summary class="cursor-pointer select-none font-semibold">Add your own advice</summary>
+    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <input id="customText" class="rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Write your advice…" />
+      <select id="customMeta" class="rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+        <option value="growth|gentle">Personal growth • Gentle</option>
+        <option value="growth|coachy">Personal growth • Coachy</option>
+        <option value="social|gentle">Social • Gentle</option>
+        <option value="social|coachy">Social • Coachy</option>
+        <option value="work|gentle">Work & learning • Gentle</option>
+        <option value="work|coachy">Work & learning • Coachy</option>
+        <option value="energy|gentle">Energy • Gentle</option>
+        <option value="energy|coachy">Energy • Coachy</option>
+        <option value="micro|gentle">Micro‑wins • Gentle</option>
+        <option value="micro|coachy">Micro‑wins • Coachy</option>
+      </select>
+    </div>
+    <div class="mt-3">
+      <button id="btnAddCustom" class="px-4 py-2 rounded-xl bg-sky-600 text-white font-medium hover:bg-sky-700">Add</button>
+    </div>
+  </details>
+</section>
+
+<!-- Favorites -->
+<section class="card rounded-2xl bg-white p-4 sm:p-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-lg font-semibold">Favorites</h2>
+    <span id="favCount" class="text-sm text-slate-500">0 saved</span>
+  </div>
+  <ul id="favList" class="mt-3 space-y-2"></ul>
+</section>
+
+<footer class="py-8 text-center text-xs text-slate-500">Made for gentle momentum 🌱</footer>
+
+  </div>  <script>
+    // --- Advice database ----------------------------------------------------
+    const BASE = [
+      // micro (≤2 min)
+      {t:"micro", a:"Take 3 slow breaths. On each exhale, drop your shoulders a little lower.", m:"gentle"},
+      {t:"micro", a:"One-tap progress: set a 2‑minute timer and tidy only what’s in arm’s reach.", m:"coachy"},
+      {t:"micro", a:"Send a single ✅ emoji to mark ‘I showed up’ today—no explanation needed.", m:"gentle"},
+      {t:"micro", a:"Write one sentence about what you’ll do next. Only one.", m:"coachy"},
+
+      // social (gentle)
+      {t:"social", a:"Text one person: ‘Thinking of you—no need to reply.’ Connection without pressure.", m:"gentle"},
+      {t:"social", a:"Ask a tiny question instead of small talk: ‘What made you smile today?’", m:"gentle"},
+
+      // social (coachy)
+      {t:"social", a:"Pick one micro‑reach: reply to the last unread message with just 7–15 words.", m:"coachy"},
+      {t:"social", a:"Share one useful link in a group you’re in. Contribute once, then log off.", m:"coachy"},
+
+      // growth
+      {t:"growth", a:"You don’t need to become loud to be heard. Clarity beats volume—write your thought in 3 lines.", m:"gentle"},
+      {t:"growth", a:"Choose discomfort with a seatbelt: do the first 5% of the scary thing, then reassess.", m:"coachy"},
+      {t:"growth", a:"Schedule ‘quiet power’ time: 15 minutes today to move one personal goal 1% forward.", m:"gentle"},
+
+      // work & learning
+      {t:"work", a:"Set a 10‑minute focus sprint. Headphones on, one tab only. Stop when the timer ends.", m:"coachy"},
+      {t:"work", a:"Turn a meeting into writing: draft your point as bullets and paste it when ready.", m:"gentle"},
+      {t:"work", a:"Do the task that makes future‑you grateful, not current‑you comfortable.", m:"coachy"},
+
+      // energy & self‑care
+      {t:"energy", a:"Protect your battery: say ‘Not today, but I can do Tuesday’. Boundaries are a gift.", m:"gentle"},
+      {t:"energy", a:"Move your body for 60 seconds—shake out hands, roll shoulders, stand tall. New state, new start.", m:"coachy"},
+      {t:"energy", a:"Choose a tiny treat for after the next task. Reward wires the habit.", m:"gentle"},
+    ];
+
+    // Load custom advice from localStorage
+    const CUSTOM_KEY = 'introvertboost_custom_v1';
+    const FAVORITES_KEY = 'introvertboost_favs_v1';
+    const custom = JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]');
+    let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+
+    const adviceEl = document.getElementById('advice');
+    const miniEl = document.getElementById('mini');
+    const favList = document.getElementById('favList');
+    const favCount = document.getElementById('favCount');
+
+    function dataset() { return [...BASE, ...custom]; }
+
+    function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+
+    function renderFavorites() {
+      favList.innerHTML = '';
+      favorites.forEach((text, i) => {
+        const li = document.createElement('li');
+        li.className = 'fade-in p-3 rounded-xl bg-slate-100 flex items-start justify-between gap-3';
+        li.innerHTML = `<div class="text-sm">${escapeHtml(text)}</div>
+                        <div class="flex items-center gap-2">
+                          <button data-copy="${encodeURIComponent(text)}" class="px-3 py-1 rounded-lg bg-slate-900 text-white text-xs">Copy</button>
+                          <button data-del="${i}" class="px-3 py-1 rounded-lg bg-rose-600 text-white text-xs">Remove</button>
+                        </div>`;
+        favList.appendChild(li);
+      });
+      favCount.textContent = `${favorites.length} saved`;
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    }
+
+    function escapeHtml(s){
+      return s.replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    }
+
+    function buildAdvice() {
+      const cat = document.getElementById('category').value; 
+      const tone = document.getElementById('tone').value; 
+      const ctx = document.getElementById('context').value.trim();
+      let pool = dataset();
+      if (cat !== 'any') pool = pool.filter(x => x.t === cat);
+      if (tone !== 'any') pool = pool.filter(x => x.m === tone);
+      if (!pool.length) pool = dataset();
+      const { a } = pick(pool);
+      const final = ctx ? a.replace(/\.$/, '') + ` — try it around "${ctx}".` : a;
+      adviceEl.textContent = final;
+      miniEl.textContent = 'One‑minute version: do the smallest visible step, then stop.';
+    }
+
+    // Event handlers
+    document.getElementById('btnNew').addEventListener('click', buildAdvice);
+    document.getElementById('btnCopy').addEventListener('click', () => {
+      if (!adviceEl.textContent) return;
+      navigator.clipboard.writeText(adviceEl.textContent);
+      miniEl.textContent = 'Copied to clipboard.';
+    });
+    document.getElementById('btnFav').addEventListener('click', () => {
+      const text = adviceEl.textContent.trim();
+      if (!text) return;
+      if (!favorites.includes(text)) favorites.unshift(text);
+      renderFavorites();
+    });
+    document.getElementById('btnClear').addEventListener('click', () => {
+      favorites = [];
+      renderFavorites();
+    });
+
+    document.getElementById('favList').addEventListener('click', (e) => {
+      const copyData = e.target.getAttribute('data-copy');
+      const delIndex = e.target.getAttribute('data-del');
+      if (copyData) {
+        navigator.clipboard.writeText(decodeURIComponent(copyData));
+      } else if (delIndex !== null) {
+        favorites.splice(Number(delIndex), 1);
+        renderFavorites();
+      }
+    });
+
+    document.getElementById('btnAddCustom').addEventListener('click', () => {
+      const t = document.getElementById('customText');
+      const m = document.getElementById('customMeta');
+      const [type, tone] = m.value.split('|');
+      const text = t.value.trim();
+      if (!text) return;
+      custom.push({ t: type, a: text, m: tone });
+      localStorage.setItem(CUSTOM_KEY, JSON.stringify(custom));
+      t.value = '';
+      miniEl.textContent = 'Custom advice added!';
+    });
+
+    // First load
+    renderFavorites();
+    buildAdvice();
+  </script></body>
+</html>
